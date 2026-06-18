@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, TextField, Box, Typography, IconButton, Snackbar, Tooltip } from '@mui/material';
+import { TextField, Box, Typography, IconButton, Snackbar, Tooltip } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Terminal } from './components/Terminal';
 import { PreviewModal } from './components/PreviewModal';
 import { callAi, fetchExtendedRepoData, generateReadme } from './utils/api';
 import type { ChatMessage, LogEntry } from './types';
+import Landing from './pages/Landing';
 
 export const App = () => {
   const [state, setState] = useState<'LANDING' | 'PROCESSING' | 'COMPLETED'>('LANDING');
@@ -105,26 +106,10 @@ export const App = () => {
       </Box>
 
       {state === 'LANDING' ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 10 }}>
-           <TextField 
-              label="GitHub Repository URL" 
-              variant="outlined"
-              onChange={(e) => setUrl(e.target.value)} 
-              autoComplete="off"
-              slotProps={{ inputLabel: { sx: { color: '#8b949e' } } }}
-              sx={{ 
-                width: '500px',
-                '& .MuiOutlinedInput-root': { 
-                  bgcolor: '#161b22', 
-                  color: '#e0e6ed', 
-                  '& fieldset': { borderColor: '#30363d' },
-                  '&:hover fieldset': { borderColor: '#58a6ff' }, 
-                  '&.Mui-focused fieldset': { borderColor: '#58a6ff' } 
-                }
-              }} 
-            />
-           <Button variant="contained" onClick={handleGenerate} sx={{ mt: 2 }}>Create README</Button>
-        </Box>
+        <Landing 
+          onGenerate={handleGenerate}
+          onUrlChange={(e) => setUrl(e.target.value)}
+        />
       ) : (
         <Box sx={{ 
           display: 'grid', 
@@ -136,21 +121,7 @@ export const App = () => {
           minHeight: 0 
         }}>
           {/* Left Panel: Terminal */}
-          <Box 
-            sx={{ 
-              bgcolor: '#010409', 
-              borderRadius: 2, 
-              border: '1px solid #2d333b', 
-              p: 2,
-              display: 'flex',          
-              flexDirection: 'column',  
-              minHeight: 0,             
-              flexGrow: 1               
-            }}
-          >
-            <Typography variant="caption" sx={{ color: '#8b949e', mb: 1, display: 'block' }}>TERMINAL</Typography>
-            <Terminal logs={logs} />
-          </Box>
+          <Terminal logs={logs} />
 
           {/* Right Panel: Markdown Editor */}
           <Box 
