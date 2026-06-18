@@ -44,3 +44,8 @@ export interface TypewriterLineProps {
   onCharacterTyped: () => void;
   onComplete?: () => void;
 }
+
+export interface LandingProps {
+  onGenerate: () => Promise<void> | void;
+  onUrlChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}
