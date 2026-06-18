@@ -4,8 +4,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Terminal } from './components/Terminal';
 import { PreviewModal } from './components/PreviewModal';
-import { fetchRepoData, generateReadme } from './utils/api';
-import type { LogEntry } from './types';
+import { callAi, fetchExtendedRepoData, generateReadme } from './utils/api';
+import type { ChatMessage, LogEntry } from './types';
 
 export const App = () => {
   const [state, setState] = useState<'LANDING' | 'PROCESSING' | 'COMPLETED'>('LANDING');
@@ -15,22 +15,74 @@ export const App = () => {
   const [url, setUrl] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  const addLog = (message: string) => 
-    setLogs((prev) => [...prev, { id: Date.now().toString(), message, timestamp: new Date() }]);
+  const addLog = (message: string) => {
+    return new Promise<void>((resolve) => {
+      const uniqueId = `log-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      
+      setLogs((prev) => [
+        ...prev, 
+        { 
+          id: uniqueId, 
+          message, 
+          timestamp: new Date(), 
+          onComplete: resolve
+        }
+      ]);
+    });
+  };
 
   const handleGenerate = async () => {
     setState('PROCESSING');
-    addLog("Starting process...");
+    await addLog("Starting process...");
+    
     try {
-      const repoData = await fetchRepoData(url);
-      addLog(`Success: Found ${repoData.name}`);
-      const result = await generateReadme(repoData);
-      setMarkdown(result);
-      addLog("Process complete!");
+      const repoData = await fetchExtendedRepoData(url);
+      await addLog(`Success: Found ${repoData.meta.name}`);
+      
+      let history: ChatMessage[] = [];
+
+      for (let currentPart = 1; currentPart <= 4; currentPart++) {
+        
+        const sectionLabels: Record<number, string> = {
+          1: "Overview & Tagline",
+          2: "Tech Stack & Tools",
+          3: "Project Structure Tree",
+          4: "Getting Started & Key Features"
+        };
+
+        await addLog(`System: Formulating and processing ${sectionLabels[currentPart]}...`);
+        
+        const stepResult = await generateReadme(currentPart, history, repoData);
+        
+        history = stepResult.updatedHistory;
+
+        history.push({ 
+          role: 'user', 
+          parts: [{ text: "Briefly explain in 3-4 sentences what you were thinking and your reasoning behind your decisions in the previous prompt." }] 
+        });
+        
+        const explanation = await callAi(history);
+        
+        history.push({ role: 'model', parts: [{ text: explanation }] });
+        
+        await addLog(`${explanation}\n`);
+      }
+      await addLog("System: Compiling and formatting the complete cohesive Markdown document structure...");
+
+      history.push({ 
+        role: 'user', 
+        parts: [{ text: "Now assemble all generated sections into a single, seamless README.md markdown document. Return ONLY the markdown content inside a single block. Do not include markdown wraps like ```markdown at the start or end." }] 
+      });
+      
+      const markdownFile = await callAi(history);
+      setMarkdown(markdownFile);
+
+      await addLog("Process complete! All sections generated and compiled successfully.");
       setState('COMPLETED');
     } catch (err) {
-      addLog(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      setState('COMPLETED');
+      console.error(err);
+      await addLog(`Error: ${err instanceof Error ? err.message : 'Unknown error occurred.'}`);
+      setState('COMPLETED'); 
     }
   };
 
@@ -43,10 +95,10 @@ export const App = () => {
     <Box sx={{ 
       bgcolor: '#0f1117', 
       color: '#e0e6ed', 
-      height: '100vh', // Force to view height
+      height: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      overflow: 'hidden' // Prevent body scroll
+      overflow: 'hidden' 
     }}>
       <Box sx={{ p: 3, borderBottom: '1px solid #2d333b' }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>README.ai</Typography>
@@ -64,11 +116,11 @@ export const App = () => {
                 width: '500px',
                 '& .MuiOutlinedInput-root': { 
                   bgcolor: '#161b22', 
-                  color: '#e0e6ed', // Sets the input text color
+                  color: '#e0e6ed', 
                   '& fieldset': { borderColor: '#30363d' },
-                  '&:hover fieldset': { borderColor: '#58a6ff' }, // Adds a nice blue highlight on hover
-                  '&.Mui-focused fieldset': { borderColor: '#58a6ff' } // Blue border when typing
-                } 
+                  '&:hover fieldset': { borderColor: '#58a6ff' }, 
+                  '&.Mui-focused fieldset': { borderColor: '#58a6ff' } 
+                }
               }} 
             />
            <Button variant="contained" onClick={handleGenerate} sx={{ mt: 2 }}>Create README</Button>
@@ -77,14 +129,25 @@ export const App = () => {
         <Box sx={{ 
           display: 'grid', 
           gridTemplateColumns: '1fr 1fr', 
-          flexGrow: 1, // Let this fill available vertical space
+          flexGrow: 1, 
           gap: 2, 
           p: 3, 
-          overflow: 'hidden', // IMPORTANT: Keep it inside the view
-          minHeight: 0 // CRITICAL: Allows child flex items to shrink
+          overflow: 'hidden', 
+          minHeight: 0 
         }}>
-          {/* Left Panel */}
-          <Box sx={{ bgcolor: '#010409', borderRadius: 2, border: '1px solid #2d333b', p: 2 }}>
+          {/* Left Panel: Terminal */}
+          <Box 
+            sx={{ 
+              bgcolor: '#010409', 
+              borderRadius: 2, 
+              border: '1px solid #2d333b', 
+              p: 2,
+              display: 'flex',          
+              flexDirection: 'column',  
+              minHeight: 0,             
+              flexGrow: 1               
+            }}
+          >
             <Typography variant="caption" sx={{ color: '#8b949e', mb: 1, display: 'block' }}>TERMINAL</Typography>
             <Terminal logs={logs} />
           </Box>
@@ -124,21 +187,19 @@ export const App = () => {
                   flexGrow: 1,
                   display: 'flex',
                   flexDirection: 'column',
-                  // Root: defines the scrollable area
                   '& .MuiInputBase-root': { 
                     flexGrow: 1,
                     padding: '16px',
                     boxSizing: 'border-box',
-                    overflowY: 'auto !important' // Force scroll here
+                    overflowY: 'auto !important' 
                   },
-                  // The textarea: Force it to fill the root and ignore MUI's inline height
                   '& .MuiInputBase-input': { 
                     fontFamily: 'monospace', 
                     color: '#e0e6ed', 
                     fontSize: '14px',
-                    height: '100% !important',    // Override the 5704px injected by MUI
-                    minHeight: '100% !important', // Ensure it fills the area
-                    overflowY: 'auto !important', // Enable internal scroll
+                    height: '100% !important',    
+                    minHeight: '100% !important', 
+                    overflowY: 'auto !important', 
                     padding: '0 !important'
                   } 
                 }}
