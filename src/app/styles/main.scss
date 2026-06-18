@@ -1,40 +1,70 @@
-/* Reset and Global Styles */
-body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; }
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #161b22; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-
-/* Terminal */
-.terminal-container {
-  background-color: #010409; color: #00ff00; padding: 1rem;
-  font-family: 'Fira Code', monospace; overflow-y: auto; height: 90%;
+body {
+  margin: 0;
+  font-family:
+  'Inter', sans-serif;
+  background-color: #0d1117;
+  color: #c9d1d9; 
 }
 
-/* Modal Styling */
+::-webkit-scrollbar { 
+  width: 8px;
+}
+::-webkit-scrollbar-track { 
+  background: #161b22; 
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.terminal-container {
+  background-color: #010409; 
+  color: #00ff00; 
+  padding: 1rem;
+  font-family: 'Fira Code', monospace; 
+  overflow-y: auto;
+  flex-grow: 1;
+  min-height: 0;
+
+  p { 
+    margin: 0.2rem 0;
+    font-size: 0.85rem;
+  }
+}
+
 .preview-modal-box {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%; height: 80%;
-  background: #0d1117; padding: 2rem;
-  overflow: hidden; /* Prevent modal from scrolling itself */
-  border-radius: 12px; border: 1px solid #30363d;
-  display: flex; flex-direction: column;
+  width: 80%;
+  height: 80%;
+  background: #0d1117;
+  padding: 2rem;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
 }
 
 .markdown-body {
-  overflow-y: auto; /* Internal scrolling */
-  padding-right: 1.5rem; /* Padding between content and scrollbar */
+  overflow-y: auto;
+  padding-right: 1.5rem;
   flex-grow: 1;
 }
 
-/* Markdown Content Styling */
 .markdown-preview-container {
-  a { color: #58a6ff !important; text-decoration: none; }
+  a {
+    color: #58a6ff !important;
+    text-decoration: none; 
+  }
   pre {
     background-color: #1e1e1e !important;
     border: 1px solid #414141 !important;
     padding: 1rem !important;
     border-radius: 6px !important;
-    code { background: transparent !important; color: #e0e6ed !important; }
+    code {
+      background: transparent !important;
+      color: #e0e6ed !important;
+    }
   }
 }
