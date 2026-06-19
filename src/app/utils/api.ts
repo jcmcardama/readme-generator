@@ -54,33 +54,35 @@ export const generateReadme = async (
 ): Promise<{ response: string; updatedHistory: ChatMessage[] }> => {
   const repoMeta = data?.meta;
   const files = data?.fileTree.join('\n');
+  const authorHandle = repoMeta?.owner?.login || 'Developer';
   
   const getPromptForPart = (): string => {
     switch (part) {
       case 1:
         return `
-          Act as an elite technical writer. Generate Part 1 of a professional README.md.
+          Act as an elite technical writer. Generate Part 1 (The Identity) of a clean, professional template README.md.
         
           Repository Meta:
           Name: ${repoMeta?.name}
-          Description: ${repoMeta?.description || 'Not provided'}
-          Primary Language: ${repoMeta?.language}
+          Description: ${repoMeta?.description || 'A modern software application architecture.'}
+          Primary Language: ${repoMeta?.language || 'Unspecified'}
 
           Actual Repository File List:
           ${files}
 
           Generate exactly:
           1. An H1 Header with the repository name and a precise, single-sentence tagline.
-          2. A professional "## 🚀 Project Overview" overview paragraph and 4-5 bullet points. 
-          CRITICAL: Rely ONLY on the actual files listed above. Do not invent databases, frameworks, or security features if you do not see them in the file list.
+          2. A "## 🚀 Project Overview" section with a comprehensive summary paragraph followed by 4-5 descriptive bullet points detailing the core architecture layout visible from the files. Use bold keywords at the beginning of bullet points separated by a hyphen.
+          
+          CRITICAL: Rely ONLY on the actual files listed above. Do not invent external databases, servers, or cloud hosting settings.
         `;
       case 2:
         return `
           Using our established overview, generate "## 🛠️ Tech Stack".
-          Based strictly on the primary language (${repoMeta?.language}) and the presence of config files in this list:
+          Based strictly on the primary language (${repoMeta?.language}) and core configuration files present in this directory list:
           ${files}
           
-          List the core languages, runtime engines, and primary tools. Provide a 1-sentence engineering justification for why each component fits this exact file layout. Do not hallucinate external cloud services or databases.
+          List the core language, runtime environment, and primary tools detected. Provide a 1-sentence engineering justification for why each tool fits this specific file layout. Keep it general and standard.
         `;
       case 3:
         return `
@@ -88,14 +90,16 @@ export const generateReadme = async (
           Convert the following file path list into a clean, visual ASCII directory tree layout. Group minor files inside their parent directories:
           ${files}
           
-          Add clean inline comments with a hash symbol (#) explaining what role each directory plays based on industry standard naming conventions.
+          Add clean inline comments with a hash symbol (#) explaining what role each core directory plays based on industry-standard software conventions.
         `;
       default:
         return `
-          Complete the README with standard installation and operational scripts.
-          Based on the file tree, output:
-          1. "## 🚀 Getting Started" including Prerequisites, clone command, installation commands, and environmental configurations appropriate for a ${repoMeta?.language} project.
-          2. "## ✨ Key Features" using checkmark emojis (✅) highlighting real capabilities shown by the repository architecture.
+          Complete the README template with standard operational scripts and structural parameters.
+          Based on the file tree, output exactly:
+          1. "## 🚀 Getting Started" including standard Prerequisites, clone command, and dependency installation commands appropriate for a ${repoMeta?.language} ecosystem.
+          2. "## 📝 Available Scripts" detailing standard operational commands found in this type of codebase (e.g., run dev, build, test workflows).
+          3. "## ✨ Key Features" using checkmark emojis (✅) highlighting 4-5 structural traits (e.g., Type-Safe Interface, Component Architecture, Modular Asset Pipeline).
+          4. A definitive final footer credit line: **Made with ❤️ by ${authorHandle}**
         `;
     }
   };

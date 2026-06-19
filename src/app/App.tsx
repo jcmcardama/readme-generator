@@ -48,10 +48,10 @@ export const App = () => {
       for (let currentPart = 1; currentPart <= 4; currentPart++) {
         
         const sectionLabels: Record<number, string> = {
-          1: "Overview & Tagline",
-          2: "Tech Stack & Tools",
-          3: "Project Structure Tree",
-          4: "Getting Started & Key Features"
+          1: "overview-and-tagline",
+          2: "tech-stack",
+          3: "project-structure-tree",
+          4: "getting-started-and-key-eatures"
         };
 
         await addLog(`  transforming chunk [${currentPart}/4] │ src/sections/${sectionLabels[currentPart]}.md`);
