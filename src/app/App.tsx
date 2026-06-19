@@ -34,11 +34,14 @@ export const App = () => {
 
   const handleGenerate = async () => {
     setState('PROCESSING');
-    await addLog("Starting process...");
+    await addLog("npm run gen-a-readme");
+    await addLog("");
+    await addLog("vite v5.4.0  building for production documentation...");
     
     try {
       const repoData = await fetchExtendedRepoData(url);
-      await addLog(`Success: Found ${repoData.meta.name}`);
+      await addLog(`✓ resolved repository hook for target: ${repoData.meta.name}`);
+      await addLog("transforming project architecture modules...");
       
       let history: ChatMessage[] = [];
 
@@ -51,24 +54,28 @@ export const App = () => {
           4: "Getting Started & Key Features"
         };
 
-        await addLog(`System: Formulating and processing ${sectionLabels[currentPart]}...`);
-        
-        const stepResult = await generateReadme(currentPart, history, repoData);
-        
-        history = stepResult.updatedHistory;
+        await addLog(`  transforming chunk [${currentPart}/4] │ src/sections/${sectionLabels[currentPart]}.md`);
 
+        const stepResult = await generateReadme(currentPart, history, repoData);
+        history = stepResult.updatedHistory;
         history.push({ 
           role: 'user', 
-          parts: [{ text: "Briefly explain in 3-4 sentences what you were thinking and your reasoning behind your decisions in the previous prompt." }] 
+          parts: [{ 
+            text: `Summarize your architectural reasoning and chunk decisions from the previous prompt as a dense, raw telemetry log.
+            CRITICAL: Do not use any personal pronouns (like 'I', 'my', 'we') or passive verbs (like 'was', 'did'). Format the response
+            as a continuous sequence of fragmented engineering notes using direct goals (e.g., 'Primary goal is...') and active present
+            participles (e.g., 'Analyzing...', 'Focusing...', 'Filtering...') in 3-4 sentence.`
+          }] 
         });
         
         const explanation = await callAi(history);
-        
         history.push({ role: 'model', parts: [{ text: explanation }] });
         
-        await addLog(`${explanation}\n`);
+        await addLog(`  ↳ [telemetry-insight]: ${explanation}\n`);
       }
-      await addLog("System: Compiling and formatting the complete cohesive Markdown document structure...");
+
+      await addLog("✓ modules transformed. bundling output schemas...");
+      await addLog("rendering final markdown chunks...");
 
       history.push({ 
         role: 'user', 
@@ -78,11 +85,16 @@ export const App = () => {
       const markdownFile = await callAi(history);
       setMarkdown(markdownFile);
 
-      await addLog("Process complete! All sections generated and compiled successfully.");
+      const fileBytes = new Blob([markdownFile]).size;
+      const fileSizeKb = (fileBytes / 1024).toFixed(2);
+      await addLog("");
+      await addLog(`dist/README.md                 ${fileSizeKb} kB │ platform: target-independent`);
+      await addLog(`✓ built successfully.`);
+
       setState('COMPLETED');
     } catch (err) {
       console.error(err);
-      await addLog(`Error: ${err instanceof Error ? err.message : 'Unknown error occurred.'}`);
+      await addLog(`✗ build failed with errors: ${err instanceof Error ? err.message : 'Unknown compilation exception.'}`);
       setState('COMPLETED'); 
     }
   };
@@ -116,7 +128,7 @@ export const App = () => {
         p: 3,
         borderBottom: '1px solid #2d333b'
       }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>README.ai</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Gen-a-README</Typography>
         <Tooltip title="Reset"><IconButton onClick={handleReset} sx={{ color: '#e0e6ed' }}><RestoreIcon fontSize="small" /></IconButton></Tooltip>
       </Box>
 
