@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
-import type { LogEntry } from '../types';
+import { useEffect, useRef, useCallback, ReactElement } from 'react';
+import type { TerminalProps } from '../types';
 import { TypewriterLine } from './TypewriterLine';
 import { formatTime } from '../utils/formatTime';
 import { Box, Typography } from '@mui/material';
 
-export const Terminal = ({ logs }: { logs: LogEntry[] }) => {
+export const Terminal = ({ logs }: TerminalProps): ReactElement => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {

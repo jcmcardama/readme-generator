@@ -2,7 +2,7 @@ import { Box, TextField, Button } from "@mui/material";
 import { LandingProps } from "../types";
 import { ReactElement } from "react";
 
-export default function Landing({ onGenerate, onUrlChange }: LandingProps): ReactElement {
+export const Landing = ({ onGenerate, onUrlChange }: LandingProps): ReactElement => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 10 }}>
             <TextField 
