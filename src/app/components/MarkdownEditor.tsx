@@ -20,8 +20,16 @@ export const MarkdownEditor = ({ state, onCopy, onPreview, onEdit, markdown }: M
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="caption" sx={{ color: '#8b949e' }}>RAW MARKDOWN</Typography>
             <Box>
-                <Tooltip title="Copy"><IconButton onClick={onCopy} sx={{ color: '#e0e6ed' }}><ContentCopyIcon fontSize="small" /></IconButton></Tooltip>
-                <Tooltip title="Preview"><IconButton onClick={onPreview} sx={{ color: '#e0e6ed' }}><VisibilityIcon fontSize="small" /></IconButton></Tooltip>
+                <Tooltip title="Copy">
+                    <IconButton onClick={onCopy} disabled={state === 'PROCESSING'} sx={{ color: '#e0e6ed' }}>
+                        <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Preview">
+                    <IconButton onClick={onPreview} disabled={state === 'PROCESSING'} sx={{ color: '#e0e6ed' }}>
+                        <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
             </Box>
         </Box>
         
