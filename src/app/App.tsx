@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { TextField, Box, Typography, IconButton, Snackbar, Tooltip } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { Box, Typography, Snackbar, IconButton, Tooltip } from '@mui/material';
+import RestoreIcon from '@mui/icons-material/Restore';
 import { Terminal } from './components/Terminal';
 import { PreviewModal } from './components/PreviewModal';
 import { callAi, fetchExtendedRepoData, generateReadme } from './utils/api';
 import type { ChatMessage, LogEntry } from './types';
-import Landing from './pages/Landing';
+import { Landing } from './components/Landing';
+import { MarkdownEditor } from './components/MarkdownEditor';
 
 export const App = () => {
   const [state, setState] = useState<'LANDING' | 'PROCESSING' | 'COMPLETED'>('LANDING');
@@ -92,6 +92,13 @@ export const App = () => {
     setSnackbarOpen(true);
   };
 
+  const handleReset = () => {
+    setMarkdown('');
+    setLogs([]);
+    setUrl('');
+    setState('LANDING');
+  };
+
   return (
     <Box sx={{ 
       bgcolor: '#0f1117', 
@@ -101,15 +108,20 @@ export const App = () => {
       flexDirection: 'column',
       overflow: 'hidden' 
     }}>
-      <Box sx={{ p: 3, borderBottom: '1px solid #2d333b' }}>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 2,
+        p: 3,
+        borderBottom: '1px solid #2d333b'
+      }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>README.ai</Typography>
+        <Tooltip title="Reset"><IconButton onClick={handleReset} sx={{ color: '#e0e6ed' }}><RestoreIcon fontSize="small" /></IconButton></Tooltip>
       </Box>
 
       {state === 'LANDING' ? (
-        <Landing 
-          onGenerate={handleGenerate}
-          onUrlChange={(e) => setUrl(e.target.value)}
-        />
+        <Landing onGenerate={handleGenerate} onUrlChange={(e) => setUrl(e.target.value)} />
       ) : (
         <Box sx={{ 
           display: 'grid', 
@@ -120,65 +132,18 @@ export const App = () => {
           overflow: 'hidden', 
           minHeight: 0 
         }}>
-          {/* Left Panel: Terminal */}
           <Terminal logs={logs} />
 
-          {/* Right Panel: Markdown Editor */}
-          <Box 
-            sx={{ 
-              bgcolor: '#161b22', 
-              borderRadius: 2, 
-              border: '1px solid #2d333b', 
-              p: 3, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              minHeight: 0, 
-              flexGrow: 1 
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="caption" sx={{ color: '#8b949e' }}>RAW MARKDOWN</Typography>
-              <Box>
-                <Tooltip title="Copy"><IconButton onClick={handleCopy} sx={{ color: '#e0e6ed' }}><ContentCopyIcon fontSize="small" /></IconButton></Tooltip>
-                <Tooltip title="Preview"><IconButton onClick={() => setIsModalOpen(true)} sx={{ color: '#e0e6ed' }}><VisibilityIcon fontSize="small" /></IconButton></Tooltip>
-              </Box>
-            </Box>
-            
-            {state === 'PROCESSING' ? (
-              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography>✨ Generating your README...</Typography>
-              </Box>
-            ) : (
-              <TextField 
-                multiline 
-                fullWidth 
-                value={markdown} 
-                onChange={(e) => setMarkdown(e.target.value)}
-                sx={{ 
-                  flexGrow: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '& .MuiInputBase-root': { 
-                    flexGrow: 1,
-                    padding: '16px',
-                    boxSizing: 'border-box',
-                    overflowY: 'auto !important' 
-                  },
-                  '& .MuiInputBase-input': { 
-                    fontFamily: 'monospace', 
-                    color: '#e0e6ed', 
-                    fontSize: '14px',
-                    height: '100% !important',    
-                    minHeight: '100% !important', 
-                    overflowY: 'auto !important', 
-                    padding: '0 !important'
-                  } 
-                }}
-              />
-            )}
-          </Box>
+          <MarkdownEditor
+            state={state} 
+            onCopy={handleCopy}
+            onPreview={() => setIsModalOpen(true)}
+            onEdit={(e) => setMarkdown(e.target.value)}
+            markdown={markdown}          
+          />
         </Box>
       )}
+
       <PreviewModal open={isModalOpen} onClose={() => setIsModalOpen(false)} markdown={markdown} />
       <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={() => setSnackbarOpen(false)} message="Copied to clipboard!" />
     </Box>

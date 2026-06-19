@@ -12,6 +12,16 @@ export interface LogEntry {
   onComplete?: () => void;
 }
 
+export interface TerminalProps {
+  logs: LogEntry[];
+}
+
+export interface TypewriterLineProps {
+  text: string;
+  onCharacterTyped: () => void;
+  onComplete?: () => void;
+}
+
 export interface GitHubRepoMeta {
   name: string;
   description: string | null;
@@ -39,13 +49,15 @@ export interface ChatMessage {
   parts: { text: string }[];
 }
 
-export interface TypewriterLineProps {
-  text: string;
-  onCharacterTyped: () => void;
-  onComplete?: () => void;
-}
-
 export interface LandingProps {
   onGenerate: () => Promise<void> | void;
   onUrlChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}
+
+export interface MarkDownEditorProps {
+  state: string;
+  onCopy: () => Promise<void> | void;
+  onPreview: () => Promise<void> | void;
+  onEdit: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  markdown: string;
 }
